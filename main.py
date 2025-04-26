@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import os # Added for directory creation
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from tqdm import tqdm
@@ -8,6 +9,7 @@ from tqdm import tqdm
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
+EPOCHS = 20
 
 # Load the dataset (MNIST)
 transform = transforms.Compose([
@@ -49,7 +51,7 @@ model = DenoisingAutoencoder().to(device)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 criterion = nn.MSELoss()
 
-for epoch in range(20):
+for epoch in range(EPOCHS):
     loss = None
     for clean_images, _ in tqdm(dataloader, desc=f"Epoch {epoch + 1}"):
         clean_images = clean_images.to(device)
@@ -66,6 +68,14 @@ for epoch in range(20):
         optimizer.step()
 
     print(f"Epoch [{epoch+1}/20], Loss: {loss.item():.4f}")
+
+# Save the trained model
+MODEL_DIR = "model"
+MODEL_PATH = os.path.join(MODEL_DIR, "denoising_ae_mnist.pth")
+
+os.makedirs(MODEL_DIR, exist_ok=True) # Create directory if it doesn't exist
+torch.save(model.state_dict(), MODEL_PATH)
+print(f"Model saved to {MODEL_PATH}")
 
 # Visualising the result
 import matplotlib.pyplot as plt
